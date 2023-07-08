@@ -1,7 +1,7 @@
 import daisy
 import json
 import logging
-import lsd
+import lsd.post
 import pymongo
 import sys
 import time
@@ -74,7 +74,7 @@ def agglomerate_worker(input_config):
 
         start = time.time()
 
-        lsd.agglomerate_in_block(
+        lsd.post.agglomerate_in_block(
                 affs,
                 fragments,
                 rag_provider,
