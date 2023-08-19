@@ -77,6 +77,7 @@ class AddLocalShapeDescriptor(BatchFilter):
         mode="gaussian",
         components=None,
         downsample=1,
+        dtype=np.float32,
     ):
 
         self.segmentation = segmentation
@@ -85,6 +86,7 @@ class AddLocalShapeDescriptor(BatchFilter):
         self.labels_mask = labels_mask
         self.unlabelled = unlabelled
         self.components = components
+        self.dtype = dtype
 
         try:
             self.sigma = tuple(sigma)
@@ -102,7 +104,7 @@ class AddLocalShapeDescriptor(BatchFilter):
     def setup(self):
 
         spec = self.spec[self.segmentation].copy()
-        spec.dtype = np.float32
+        spec.dtype = self.dtype
 
         self.voxel_size = spec.voxel_size
         self.provides(self.descriptor, spec)
@@ -174,6 +176,9 @@ class AddLocalShapeDescriptor(BatchFilter):
             roi=voxel_roi_in_seg,
         )
 
+        # TODO: Directly compute the descriptor in self.dtype instead of casting
+        descriptor = descriptor.astype(self.dtype)
+
         # create descriptor array
         descriptor_spec = self.spec[self.descriptor].copy()
         descriptor_spec.roi = request[self.descriptor].roi.copy()
@@ -194,7 +199,7 @@ class AddLocalShapeDescriptor(BatchFilter):
             else:
 
                 mask = (segmentation_array.crop(descriptor_roi).data != 0).astype(
-                    np.float32
+                    self.dtype
                 )
 
                 mask_shape = len(mask.shape)
